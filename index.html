@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Smart Bank</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Smart Bank</h1>
+
+    <section id="auth">
+      <h2>Login</h2>
+      <input id="email" placeholder="Email" type="email"/>
+      <input id="password" placeholder="Password" type="password"/>
+      <button id="loginBtn">Login</button>
+      <p>No account? <a href="#" id="showRegister">Register</a></p>
+
+      <div id="register" class="hidden">
+        <h3>Create Account</h3>
+        <input id="full_name" placeholder="Full name"/>
+        <input id="reg_email" placeholder="Email" type="email"/>
+        <input id="reg_password" placeholder="Password" type="password"/>
+        <button id="registerBtn">Register</button>
+      </div>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <h2>Dashboard</h2>
+      <div>
+        <button id="refreshAccounts">Refresh Accounts</button>
+        <ul id="accounts"></ul>
+      </div>
+      <div class="transfer">
+        <h3>Transfer</h3>
+        <input id="fromId" placeholder="From Account ID" type="number"/>
+        <input id="toId" placeholder="To Account ID" type="number"/>
+        <input id="amount" placeholder="Amount" type="number" step="0.01"/>
+        <input id="desc" placeholder="Description"/>
+        <button id="transferBtn">Send</button>
+      </div>
+      <div>
+        <h3>Transactions</h3>
+        <button id="refreshTx">Refresh</button>
+        <ul id="txs"></ul>
+      </div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
