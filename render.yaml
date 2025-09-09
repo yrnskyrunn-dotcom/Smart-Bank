@@ -4,7 +4,7 @@ services:
     env: python
     rootDir: smartbank-backend
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port 10000"
+    startCommand: "uvicorn smartbank-backend.main:app --host 0.0.0.0 --port 10000"
     plan: free
     autoDeploy: true
     healthCheckPath: /api/health
@@ -13,7 +13,7 @@ services:
     name: smartbank-frontend
     rootDir: smartbank-frontend
     buildCommand: "echo no-build"
-    publishPath: smartbank-frontend
+    publishPath: "."
     headers:
       - path: /*
         name: "Cache-Control"
