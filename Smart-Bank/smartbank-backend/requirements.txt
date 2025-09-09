@@ -1,6 +1,11 @@
-fastapi
-uvicorn
-sqlalchemy
-pydantic
-passlib[bcrypt]
-python-jose
+smartbank-backend/
+├── requirements.txt
+├── main.py
+├── auth.py
+├── database.py
+├── models.py
+├── schemas.py
+├── accounts.py
+├── transactions.py
+├── users.py
+└── __init__.py
