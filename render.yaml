@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: smartbank-backend
+    env: node
+    rootDir: smartbank-backend
+    buildCommand: "npm install"
+    startCommand: "node server.js"
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  - type: static_site
+    name: smartbank-frontend
+    rootDir: smartbank-frontend
+    buildCommand: "echo no-build"
+    publishPath: "smartbank-frontend"
+    headers:
+      - path: /*
+        name: "Cache-Control"
+        value: "public, max-age=60"
