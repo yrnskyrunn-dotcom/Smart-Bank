@@ -1,19 +1,19 @@
 services:
   - type: web
     name: smartbank-backend
-    env: node
+    env: python
     rootDir: smartbank-backend
-    buildCommand: "npm install"
-    startCommand: "node server.js"
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn smartbank_main:app --host 0.0.0.0 --port 10000"
     plan: free
-    healthCheckPath: /api/health
     autoDeploy: true
+    healthCheckPath: /api/health
 
-  - type: static_site
+  - type: static
     name: smartbank-frontend
     rootDir: smartbank-frontend
     buildCommand: "echo no-build"
-    publishPath: "smartbank-frontend"
+    publishPath: smartbank-frontend
     headers:
       - path: /*
         name: "Cache-Control"
