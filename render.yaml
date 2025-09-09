@@ -9,7 +9,7 @@ services:
     autoDeploy: true
     healthCheckPath: /api/health
 
-  - type: static
+  - type: static_site
     name: smartbank-frontend
     rootDir: smartbank-frontend
     buildCommand: "echo no-build"
