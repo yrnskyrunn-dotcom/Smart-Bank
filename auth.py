@@ -1,42 +1,35 @@
-from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
-from .database import get_db
-from . import models
-import os
+from ..database import get_db
+from .. import models, schemas
+from ..auth import create_access_token, get_password_hash, verify_password
 
-SECRET_KEY = os.getenv("SECRET_KEY", "change_me")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+router = APIRouter(prefix="/auth", tags=["auth"])
 
-pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
-def get_password_hash(password: str) -> str:
-    return pwd_ctx.hash(password)
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_ctx.verify(plain, hashed)
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> models.User:
-    cred_exc = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("sub")
-        if user_id is None:
-            raise cred_exc
-    except JWTError:
-        raise cred_exc
-    user = db.get(models.User, int(user_id))
-    if not user:
-        raise cred_exc
+@router.post("/register", response_model=schemas.UserOut)
+def register(payload: schemas.UserCreate, db: Session = Depends(get_db)):
+    existing = db.query(models.User).filter(models.User.email == payload.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user = models.User(email=payload.email, full_name=payload.full_name, hashed_password=get_password_hash(payload.password))
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    # auto-create default account
+    acct = models.Account(user_id=user.id, name="Main", type=models.AccountType.checking, balance=0.0)
+    db.add(acct)
+    db.commit()
     return user
+
+@router.post("/login", response_model=schemas.Token)
+async def login(request: Request, db: Session = Depends(get_db)):
+    body = await request.json()
+    email = body.get("username") or body.get("email")
+    password = body.get("password")
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Missing credentials")
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    token = create_access_token({"sub": str(user.id)})
+    return {"access_token": token, "token_type": "bearer"}
